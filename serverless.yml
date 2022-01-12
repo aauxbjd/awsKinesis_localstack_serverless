@@ -1,0 +1,37 @@
+service: serverless-kinesis-streams
+
+
+plugins:
+  - serverless-localstack
+
+custom:
+  localstack:
+    debug: true
+    stages:
+      - local
+      - dev
+
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-1
+  stage: local
+  iamRoleStatements:
+    - Effect: "Allow"
+      Resource: "*"
+      Action:
+        - "kinesis:*"
+
+functions:
+  dataReceiver:
+    handler: handler.dataReceiver
+    events:
+      - http:
+           method: POST
+           path: /send
+           cors: true
+  logger:
+    handler: handler.logger
+    events:
+      - stream: arn:aws:kinesis:us-east-1:000000000000:stream/data-receiver
